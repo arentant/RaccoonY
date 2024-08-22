@@ -29,6 +29,7 @@ const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: {
     return (
         <div
             {...props}
+            onClick={onClick}
             className={`relative ${side}`}
             style={{
                 border: "1px solid #000",
@@ -219,7 +220,7 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
     const [openDialog, setOpenDialog] = React.useState(false);
     const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
     const selectedLandfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
-
+    console.log(openDialog)
     const selectedLandfieldIndex = landfields.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
     const onClickHandler = (rowIndex: number, cellIndex: number) => {
@@ -374,8 +375,8 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
     const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
 
 
-    const isOwnerMe = landfield?.owner === address
-
+    const isOwnerMe = landfield?.owner?.toLowerCase() === address?.toLowerCase()
+    const haveOwner = landfield?.owner && landfield?.owner?.toLowerCase() !== '0x0000000000000000000000000000000000000000'
     const recipes = [
         {
             name: 'Wood',
@@ -439,22 +440,37 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
     return (
         <div className="flex flex-col gap-3 w-full h-full">
             <dl className="divide-y divide-gray-600">
-                <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                    <dt className="text-sm font-medium text-gray-200">Owner</dt>
-                    <Link href={''} target="_blank" className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{shortenAddress(landfield.owner)}</Link>
-                </div>
+                {
+                    landfield.type === 'landfield' &&
+                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
+                        <dt className="text-sm font-medium text-gray-200">Owner</dt>
+                        <Link href={''} target="_blank" className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{shortenAddress(landfield.owner)}</Link>
+                    </div>
+                }
+                {
+                    landfield.type === 'building' &&
+                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
+                        <dt className="text-sm font-medium text-gray-200">Name</dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.name}</dd>
+                    </div>
+                }
                 <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
                     <dt className="text-sm font-medium text-gray-200">Terrain</dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.terrainType ? terrainResolver(landfield.terrainType) : buildingResolver(landfield.buildingType)}</dd>
                 </div>
-                <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                    <dt className="text-sm font-medium text-gray-200">Sell price</dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield?.sellPrice}</dd>
-                </div>
-                <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                    <dt className="text-sm font-medium text-gray-200">Price</dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.price}</dd>
-                </div>
+                {
+                    landfield.type === 'landfield' && <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
+                        <dt className="text-sm font-medium text-gray-200">Sell price</dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield?.sellPrice}</dd>
+                    </div>
+                }
+                {
+                    landfield.type === 'landfield' &&
+                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
+                        <dt className="text-sm font-medium text-gray-200">Price</dt>
+                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.price}</dd>
+                    </div>
+                }
                 <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
                     <dt className="text-sm font-medium text-gray-200">Coordinates</dt>
                     <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">
@@ -463,11 +479,13 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
                 </div>
             </dl>
 
+            {
+                !isOwnerMe && landfield.type === 'landfield' &&
+                <div>
+                    <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-4 w-4' /> : (!haveOwner ? 'Buy' : 'Cry')}</button>
+                </div>
+            }
 
-            <div>
-                <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-4 w-4' /> : 'Buy'}</button>
-            </div>
-            
         </div>
     )
 }
