@@ -6,25 +6,25 @@ import {
 } from "@/components/shadcn/dialog"
 import { useAccount, useConfig, useSwitchChain } from "wagmi";
 import { readContract, writeContract } from "wagmi/actions";
-import { Loader2 } from "lucide-react";
+import { Loader, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
 
 const r = 100;
 
-const Hex = ({ landfields, x, y, side, isActive, account, ...props }: { landfields: Landfield[], x: number, y: number, side: string, isActive: boolean, account: string }) => {
+const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: { landfields: Landfield[], x: number, y: number, side: string, isActive: boolean, account: string, onClick: () => void }) => {
     const landfield = landfields.find((t: any) => t.x === x && t.y === y);
-    const terrain = landfield?.type === 'landfield' && terrainResolver(landfield?.terrainType);
+    const terrain = landfield?.type === 'landfield' ? terrainResolver(landfield?.terrainType) : null
 
-    const building = landfield?.type === 'building' && buildingResolver(landfield?.buildingType);
+    const building = landfield?.type === 'building' ? buildingResolver(landfield?.buildingType) : null
 
-    const all = terrain || building || 'deepWater';
+    const all = building || terrain || 'deepWater';
 
-    const isVilian = landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater' && landfield?.owner !== account
-    const isMine = landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater' && landfield?.owner === account
+    const isVilian = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && landfield?.owner !== account
+    const isMine = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater') && landfield?.owner === account
 
-    const src = (landfield && landfield?.owner !== '0x0000000000000000000000000000000000000000') ? `/assets/${all}/${all}${isVilian ? 'Enemy' : 'My'}.png` : `/assets/${all}/${all}.png`;
+    const src = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') ? `/assets/${all}/${all}${isVilian ? 'Enemy' : 'My'}.png` : `/assets/${all}/${all}.png`;
 
     return (
         <div
@@ -140,6 +140,7 @@ export default function App() {
     const [loading, setLoading] = React.useState(false);
     const [landfields, setLandfields] = React.useState<Landfield[]>([]);
     const [dimensions, setDimensions] = React.useState<{ width: number, height: number } | undefined>(undefined);
+    const [allRecipes, setAllRecipes] = React.useState<string[]>([])
 
     const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
     useEffect(() => {
@@ -171,7 +172,7 @@ export default function App() {
                     x: Number(r.y),
                     y: Number(r.x),
                     type: 'landfield',
-                    terrainType: r.terrainType, 
+                    terrainType: r.terrainType,
                     owner: r.owner,
                     price: Number(r.price),
                     sellPrice: Number(r.sellPrice),
@@ -274,7 +275,6 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
                     <LandfieldDetails landfield={selectedLandfield} landfieldIndex={selectedLandfieldIndex} />
                 </DialogContent>
             </Dialog>
-
         </>
     )
 }
@@ -297,16 +297,12 @@ enum Buildings {
     Residential
 }
 
-type Landfield = (
-    {
-        type: 'landfield';
-        terrainType: Terrains;
-    } | {
-        type: 'building';
-        buildingType: Buildings;
-        name: string;
-    }
-) & Common
+type Landfield = {
+    type: 'landfield' | 'building';
+    terrainType?: Terrains;
+    buildingType?: Buildings;
+    name?: string;
+} & Common
 
 type Common = {
     x: number;
@@ -317,15 +313,12 @@ type Common = {
     recipe: string;
 }
 
-type LandfieldResponse = ({
-    type: 'landfield';
-    terrainType: Terrains;
-
-} | {
-    type: 'building';
-    buildingType: Buildings;
-    name: string;
-}) & CommonResponse
+type LandfieldResponse = {
+    type: 'landfield' | 'building';
+    terrainType?: Terrains;
+    buildingType?: Buildings;
+    name?: string;
+} & CommonResponse
 
 type CommonResponse = {
     x: bigint;
@@ -380,10 +373,19 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
     const { address } = useAccount()
     const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
 
+
+    const isOwnerMe = landfield?.owner === address
+
+    const recipes = [
+        {
+            name: 'Wood',
+            contract: '0x75f1589501a546ec579E022B65853cD84322958d'
+        }
+    ]
+
     if (!landfield) return <div>
         Not found
     </div>;
-
 
 
     const buyLandfield = async () => {
@@ -411,6 +413,29 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
 
     }
 
+    const setRecipe = async () => {
+        if (!address) return
+
+        try {
+            setLoading(true)
+
+            await writeContract(config, {
+                account: address,
+                address: contract,
+                abi: LandfieldABI,
+                args: [landfieldIndex],
+                functionName: 'setRecipe',
+            })
+
+        }
+        catch (e) {
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="flex flex-col gap-3 w-full h-full">
             <dl className="divide-y divide-gray-600">
@@ -420,7 +445,7 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
                 </div>
                 <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
                     <dt className="text-sm font-medium text-gray-200">Terrain</dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{terrainResolver(landfield.terrainType)}</dd>
+                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.terrainType ? terrainResolver(landfield.terrainType) : buildingResolver(landfield.buildingType)}</dd>
                 </div>
                 <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
                     <dt className="text-sm font-medium text-gray-200">Sell price</dt>
@@ -440,8 +465,9 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
 
 
             <div>
-                <button onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">Buy</button>
+                <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-4 w-4' /> : 'Buy'}</button>
             </div>
+            
         </div>
     )
 }
