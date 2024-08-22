@@ -2,36 +2,39 @@ import React, { FC, useEffect } from "react";
 import Image from "next/image";
 import {
     Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
+    DialogContent
 } from "@/components/shadcn/dialog"
-import { useConfig, useSwitchChain } from "wagmi";
-import { readContract } from "wagmi/actions";
+import { useAccount, useConfig, useSwitchChain } from "wagmi";
+import { readContract, writeContract } from "wagmi/actions";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "../shadcn/contextMenu";
 
 const r = 100;
 
-const Hex = (props) => {
-    const { A, B, side = "", ...divProps } = props;
-    const terrainEnum = props.landfields.find(t => t.x === props.x && t.y === props.y)?.terrainType;
-    const terrain = terrainResolver(terrainEnum);
+const Hex = ({ landfields, x, y, side, isActive, account, ...props }: { landfields: Landfield[], x: number, y: number, side: string, isActive: boolean, account: string }) => {
+    const landfield = landfields.find((t: any) => t.x === x && t.y === y);
+    const terrain = landfield?.type === 'landfield' && terrainResolver(landfield?.terrainType);
+
+    const building = landfield?.type === 'building' && buildingResolver(landfield?.buildingType);
+
+    const all = terrain || building || 'deepWater';
+
+    const isVilian = landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater' && landfield?.owner !== account
+    const isMine = landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater' && landfield?.owner === account
+
+    const src = (landfield && landfield?.owner !== '0x0000000000000000000000000000000000000000') ? `/assets/${all}/${all}${isVilian ? 'Enemy' : 'My'}.png` : `/assets/${all}/${all}.png`;
+
     return (
         <div
-            {...divProps}
+            {...props}
             className={`relative ${side}`}
             style={{
                 border: "1px solid #000",
                 boxSizing: "border-box",
-                height: "100px",
-                width: "100px",
-                ...props.style,
+                height: `${r}px`,
+                width: `${r}px`,
                 position: "relative",
                 borderRadius: "100%"
             }}
@@ -83,35 +86,35 @@ const Hex = (props) => {
                     right: 0
                 }}
             />
-            <Image src={`/assets/${terrain}/${terrain}.png`} alt="hexTile" width={10000} height={10000} className="absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer" />
+            <Image src={src} alt="hexTile" width={10000} height={10000} className={`absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}`} />
         </div>
     );
 };
 
-function createBoard(height: number, width: number) {
+function createBoard(height?: number | undefined, width?: number | undefined) {
     let rosLengthList = [];
 
-    height = height || 10;
+    height = height || 20;
     width = width || 33;
 
-    for (let i = 0; i < height; i++) {
-        rosLengthList.push(width, width + 1);
+    for (let i = 0; i < height / 2; i++) {
+        rosLengthList.push(width, width - 1);
     }
 
     return rosLengthList.map((length) => new Array(length).fill(0));
 }
 
-function put(board, rowIndex, cellIndex, side) {
-    const newBoard = board.map((row) => [...row]);
+function put(board: any, rowIndex: number, cellIndex: number, side: string) {
+    const newBoard = board.map((row: any) => [...row]);
     newBoard[rowIndex][cellIndex] = side;
     return newBoard;
 }
 
-function changeSide(side) {
+function changeSide(side: string) {
     return side === "A" ? "B" : "A";
 }
 
-function reducer(state, action) {
+function reducer(state: any, action: any) {
     switch (action.type) {
         case "put":
             return {
@@ -130,39 +133,63 @@ function reducer(state, action) {
 }
 
 export default function App() {
-    const [state, dispatch] = React.useReducer(reducer, {
-        board: createBoard(),
-        currentSide: "A"
-    });
+
     const config = useConfig()
     const { data: chain } = useSwitchChain()
-
+    const { address } = useAccount()
     const [loading, setLoading] = React.useState(false);
     const [landfields, setLandfields] = React.useState<Landfield[]>([]);
+    const [dimensions, setDimensions] = React.useState<{ width: number, height: number } | undefined>(undefined);
 
-
+    const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
     useEffect(() => {
         (async () => {
             try {
                 setLoading(true)
-                const result = await readContract(config, {
+                const landfieldsResult = await readContract(config, {
                     abi: LandfieldABI,
-                    address: '0x3C68AEB6438207508c3484FEA96272a5Af16338a' as `0x${string}`,
+                    address: contract,
                     functionName: 'getLandfields',
                     chainId: chain?.id,
                 })
 
-                const parsedResult = (result as unknown as LandfieldResponse[]).map((r: LandfieldResponse) => ({
-                    x: Number(r.x),
-                    y: Number(r.y),
-                    terrainType: r.terrainType,
+                const buildingsResult = await readContract(config, {
+                    abi: LandfieldABI,
+                    address: contract,
+                    functionName: 'getBuildings',
+                    chainId: chain?.id,
+                })
+                const dimensionsResult = await readContract(config, {
+                    abi: LandfieldABI,
+                    address: contract,
+                    functionName: 'getDimensions',
+                    chainId: chain?.id,
+                })
+                setDimensions({ width: Number((dimensionsResult as bigint[])[1] as bigint), height: Number((dimensionsResult as bigint[])[0]) })
+
+                const parsedLandfieldsResult = (landfieldsResult as unknown as LandfieldResponse[]).map((r: LandfieldResponse) => ({
+                    x: Number(r.y),
+                    y: Number(r.x),
+                    type: 'landfield',
+                    terrainType: r.terrainType, 
                     owner: r.owner,
                     price: Number(r.price),
                     sellPrice: Number(r.sellPrice),
-                    recipe: r.recipe
+                    recipe: r.recipe,
                 }))
 
-                setLandfields(parsedResult)
+                const parsedBuildingsResult = (buildingsResult as unknown as LandfieldResponse[]).map((r: LandfieldResponse) => ({
+                    x: Number(r.x),
+                    y: Number(r.y),
+                    buildingType: r.buildingType,
+                    owner: r.owner,
+                    price: Number(r.price),
+                    sellPrice: Number(r.sellPrice),
+                    recipe: r.recipe,
+                    type: 'building'
+                }))
+
+                setLandfields([...parsedLandfieldsResult as any, ...parsedBuildingsResult as any])
             }
             catch (e) {
                 console.log(e)
@@ -173,17 +200,6 @@ export default function App() {
         })()
     }, [chain])
 
-    const [openDialog, setOpenDialog] = React.useState(false);
-    const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
-
-    const onClickHandler = (rowIndex: number, cellIndex: number) => {
-        const landfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
-        if (landfield?.terrainType !== Terrains.DeepWater) {
-            setOpenDialog(true);
-            setSelectedCell({ rowIndex, cellIndex })
-        }
-    }
-
     return (
         <>
             {
@@ -192,49 +208,75 @@ export default function App() {
                         <Loader2 className="animate-spin h-20 w-20" />
                     </div>
                     :
-                    <>
-                        <div className="scale-[.45] absolute -top-[300px]" style={{ width: "4000px" }}>
-                            {state.board.map((row, rowIndex) => {
-                                return (
-                                    <div
-                                        style={{
-                                            marginTop: "-14px",
-                                            display: "flex",
-                                            justifyContent: "center"
-                                        }}
-                                    >
-                                        {row.map((side, cellIndex) => (
-                                            <ContextMenu>
-                                                <ContextMenuTrigger>
-                                                    <Hex
-                                                        landfields={landfields}
-                                                        x={rowIndex}
-                                                        y={cellIndex}
-                                                        side={side}
-                                                        style={{ height: `${r}px`, width: `${r}px` }}
-                                                        onClick={() => {
-                                                            onClickHandler(rowIndex, cellIndex);
-                                                        }}
-                                                    /></ContextMenuTrigger>
-                                                <ContextMenuContent>
-                                                    <ContextMenuItem>Profile</ContextMenuItem>
-                                                    <ContextMenuItem>Billing</ContextMenuItem>
-                                                    <ContextMenuItem>Team</ContextMenuItem>
-                                                    <ContextMenuItem>Subscription</ContextMenuItem>
-                                                </ContextMenuContent>
-                                            </ContextMenu>
-
-                                        ))}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-
-                    </>
+                    dimensions && landfields && address && <Map dimensions={dimensions} landfields={landfields} account={address} />
             }
         </>
     );
+}
+
+const Map = ({ dimensions, landfields, account }: { dimensions: { height: number, width: number }, landfields: Landfield[], account: string }) => {
+    const [openDialog, setOpenDialog] = React.useState(false);
+    const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
+    const selectedLandfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
+
+    const selectedLandfieldIndex = landfields.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
+
+    const onClickHandler = (rowIndex: number, cellIndex: number) => {
+        const landfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
+        if (landfield?.terrainType !== Terrains.DeepWater) {
+            setSelectedCell({ rowIndex, cellIndex })
+            setOpenDialog(true)
+        }
+    }
+
+    const onClose = () => {
+        setOpenDialog(false);
+        setSelectedCell(undefined);
+    }
+    const [state, dispatch] = React.useReducer(reducer, {
+        board: createBoard(dimensions.height, dimensions.width),
+        currentSide: "A"
+    });
+
+    return (
+        <>
+            <div className="scale-[.45] absolute -top-[200px]" style={{ width: "4000px" }}>
+                {state.board.map((row: any, rowIndex: number) => {
+                    return (
+                        <div
+                            key={rowIndex}
+                            style={{
+                                marginTop: "-14px",
+                                display: "flex",
+                                justifyContent: "center"
+                            }}
+                        >
+                            {row.map((side: string, cellIndex: number) => (
+                                <Hex
+                                    isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
+                                    landfields={landfields}
+                                    x={rowIndex}
+                                    y={cellIndex}
+                                    side={side}
+                                    onClick={() => onClickHandler(rowIndex, cellIndex)}
+                                    account={account}
+                                    key={`${rowIndex}-${cellIndex}`}
+                                />
+
+
+                            ))}
+                        </div>
+                    );
+                })}
+            </div >
+            <Dialog open={openDialog} onOpenChange={onClose}>
+                <DialogContent>
+                    <LandfieldDetails landfield={selectedLandfield} landfieldIndex={selectedLandfieldIndex} />
+                </DialogContent>
+            </Dialog>
+
+        </>
+    )
 }
 
 
@@ -247,20 +289,47 @@ enum Terrains {
     Grass
 }
 
-type Landfield = {
+enum Buildings {
+    VendorShop,
+    RecipeShop,
+    Tavern,
+    Brothel,
+    Residential
+}
+
+type Landfield = (
+    {
+        type: 'landfield';
+        terrainType: Terrains;
+    } | {
+        type: 'building';
+        buildingType: Buildings;
+        name: string;
+    }
+) & Common
+
+type Common = {
     x: number;
     y: number;
-    terrainType: Terrains;
     owner: string;
     price: number;
     sellPrice: number;
     recipe: string;
 }
 
-type LandfieldResponse = {
+type LandfieldResponse = ({
+    type: 'landfield';
+    terrainType: Terrains;
+
+} | {
+    type: 'building';
+    buildingType: Buildings;
+    name: string;
+}) & CommonResponse
+
+type CommonResponse = {
     x: bigint;
     y: bigint;
-    terrainType: Terrains;
     owner: string;
     price: number;
     sellPrice: number;
@@ -286,16 +355,64 @@ const terrainResolver = (terrain: number | undefined) => {
     }
 }
 
+const buildingResolver = (building: number | undefined) => {
+    switch (building) {
+        case Buildings.VendorShop:
+            return "vendorShop";
+        case Buildings.RecipeShop:
+            return "recipeShop";
+        case Buildings.Tavern:
+            return "tavern";
+        case Buildings.Brothel:
+            return "brothel";
+        case Buildings.Residential:
+            return "residential";
+
+        default: return "brothel";
+    }
+}
 
 
-const LandfieldDetails: FC<{ landfield: Landfield | undefined }> = ({ landfield }) => {
+
+const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
+    const [loading, setLoading] = React.useState(false);
+    const config = useConfig()
+    const { address } = useAccount()
+    const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
 
     if (!landfield) return <div>
         Not found
     </div>;
 
+
+
+    const buyLandfield = async () => {
+
+        if (!address) return
+
+        try {
+            setLoading(true)
+
+            await writeContract(config, {
+                account: address,
+                address: contract,
+                abi: LandfieldABI,
+                args: [landfieldIndex],
+                functionName: 'buyLandfield',
+            })
+
+        }
+        catch (e) {
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+
+    }
+
     return (
-        <div>
+        <div className="flex flex-col gap-3 w-full h-full">
             <dl className="divide-y divide-gray-600">
                 <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
                     <dt className="text-sm font-medium text-gray-200">Owner</dt>
@@ -320,6 +437,11 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined }> = ({ landfield 
                     </dd>
                 </div>
             </dl>
+
+
+            <div>
+                <button onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">Buy</button>
+            </div>
         </div>
     )
 }

@@ -1,39 +1,18 @@
 [
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "worldName_",
+                "type": "string"
+            }
+        ],
         "stateMutability": "nonpayable",
         "type": "constructor"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "target",
-                "type": "address"
-            }
-        ],
-        "name": "AddressEmptyCode",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "AddressInsufficientBalance",
-        "type": "error"
-    },
-    {
         "inputs": [],
         "name": "CantBuy",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "FailedInnerCall",
         "type": "error"
     },
     {
@@ -49,13 +28,30 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "token",
-                "type": "address"
+                "internalType": "enum World.BuildingType[]",
+                "name": "buildingType",
+                "type": "uint8[]"
+            },
+            {
+                "internalType": "string[]",
+                "name": "name",
+                "type": "string[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "x",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "y",
+                "type": "uint256[]"
             }
         ],
-        "name": "SafeERC20FailedOperation",
-        "type": "error"
+        "name": "__createBuildings__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
         "inputs": [
@@ -97,7 +93,7 @@
     },
     {
         "inputs": [],
-        "name": "__destroyAllLandfields__",
+        "name": "__destroyAll__",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -198,6 +194,41 @@
         "name": "claimResource",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getBuildings",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "enum World.BuildingType",
+                        "name": "buildingType",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "x",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "y",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct World.Building[]",
+                "name": "",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -390,6 +421,19 @@
         "name": "setSellPrice",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "worldName",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]
