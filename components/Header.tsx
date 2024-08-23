@@ -6,16 +6,12 @@ import GoldBalance from "./crypto/GoldBalance";
 
 const Header = () => {
 
-    const { address } = useAccount()
-
     return (
         <header className="flex justify-between items-center p-3">
             <Image src='/logoSmall.png' alt={"raccoonySmall"} width={100} height={100} className="h-20 w-auto" />
-            {/* {
-                address && <Balances />
-            } */}
+        
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col justify-end sm:flex-row items-center gap-3 ">
                 <GoldBalance />
                 <ConnectButton showBalance={false} />
             </div>

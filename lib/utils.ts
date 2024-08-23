@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -10,3 +10,12 @@ export function shortenAddress(address: string) {
     return address;
   return `${address?.substring(0, 5)}...${address?.substring(address?.length - 4, address?.length)}`
 }
+
+export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
+  return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals))
+}
+
+export const haveOwner = (owner: string) => {
+  const haveOwner = owner && owner?.toLowerCase() !== '0x0000000000000000000000000000000000000000'
+  return haveOwner
+} 

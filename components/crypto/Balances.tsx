@@ -1,8 +1,8 @@
 import { Chain, erc20Abi, http } from 'viem'
 import { multicall } from '@wagmi/core'
 import { createConfig, useSwitchChain } from 'wagmi'
-import formatAmount from '@/lib/formatAmount'
 import { useEffect, useState } from 'react'
+import { formatAmount } from '@/lib/utils'
 
 const Balances = () => {
 

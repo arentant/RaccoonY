@@ -1,4 +1,3 @@
-import formatAmount from "@/lib/formatAmount";
 import { Loader } from "lucide-react";
 import { FC, useEffect, useState } from "react";
 import { useAccount, useConfig, useSwitchChain } from "wagmi";
@@ -6,6 +5,7 @@ import { getBalance, writeContract } from "wagmi/actions";
 import LandfieldABI from "../../../lib/abis/LanfieldABI.json";
 import { parseEther } from 'viem'
 import { worldContract } from "@/lib/contracts";
+import { formatAmount } from "@/lib/utils";
 
 const BuyGold: FC = () => {
     const config = useConfig()

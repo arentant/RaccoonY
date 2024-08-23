@@ -1,16 +1,20 @@
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
-import {
-    Dialog,
-    DialogContent
-} from "@/components/shadcn/dialog"
 import { useAccount, useConfig, useSwitchChain } from "wagmi";
-import { readContract, writeContract } from "wagmi/actions";
-import { Loader, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { shortenAddress } from "@/lib/utils";
+import { readContract } from "wagmi/actions";
+import { Loader2 } from "lucide-react";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
-import { resourcesContracts, worldContract } from "@/lib/contracts";
+import { worldContract } from "@/lib/contracts";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/shadcn/dropdownMenu";
+import LandfieldDetails from "./LandfieldDetails";
+import { buildingResolver, Buildings, terrainResolver, Terrains } from "./Resolvers";
+import ResizablePanel from "../ResizablePanel";
 
 const r = 100;
 
@@ -90,7 +94,7 @@ const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: {
                     right: 0
                 }}
             />
-            <div className="absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}">
+            <div className={`absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}`}>
                 {
                     border &&
                     <Image src={border} alt="hexTile" width={100} height={100} className="absolute" />
@@ -226,25 +230,19 @@ export default function App() {
 }
 
 const Map = ({ dimensions, landfields, account }: { dimensions: { height: number, width: number }, landfields: Landfield[], account: string }) => {
-    const [openDialog, setOpenDialog] = React.useState(false);
     const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
     const selectedLandfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
-    console.log(openDialog)
+
     const selectedLandfieldIndex = landfields.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
     const onClickHandler = (rowIndex: number, cellIndex: number) => {
         const landfield = landfields.find(l => l.x === rowIndex && l.y === cellIndex);
         if (!!landfield) {
             setSelectedCell({ rowIndex, cellIndex })
-            setOpenDialog(true)
         }
     }
 
-    const onClose = () => {
-        setOpenDialog(false);
-        setSelectedCell(undefined);
-    }
-    const [state, dispatch] = React.useReducer(reducer, {
+    const [state] = React.useReducer(reducer, {
         board: createBoard(dimensions.height, dimensions.width),
         currentSide: "A"
     });
@@ -264,57 +262,44 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
                         >
                             {row.map((side: string, cellIndex: number) => (
                                 <>
-
-                                    <Hex
-                                        isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
-                                        landfields={landfields}
-                                        x={rowIndex}
-                                        y={cellIndex}
-                                        side={side}
-                                        onClick={() => onClickHandler(rowIndex, cellIndex)}
-                                        account={account}
-                                        key={`${rowIndex}-${cellIndex}`}
-                                    />
-
-
-
+                                    <DropdownMenu onOpenChange={(open) => {
+                                        if (open) {
+                                            onClickHandler(rowIndex, cellIndex)
+                                        } else {
+                                            setSelectedCell(undefined)
+                                        }
+                                    }}>
+                                        <DropdownMenuTrigger>
+                                            <Hex
+                                                isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
+                                                landfields={landfields}
+                                                x={rowIndex}
+                                                y={cellIndex}
+                                                side={side}
+                                                onClick={() => onClickHandler(rowIndex, cellIndex)}
+                                                account={account}
+                                                key={`${rowIndex}-${cellIndex}`}
+                                            />
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuLabel>{selectedLandfield?.name || 'Landfield'}</DropdownMenuLabel>
+                                            <DropdownMenuSeparator />
+                                            <ResizablePanel>
+                                                <LandfieldDetails landfield={selectedLandfield} landfieldIndex={selectedLandfieldIndex} />
+                                            </ResizablePanel>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </>
-
-
-
                             ))}
                         </div>
                     );
                 })}
             </div >
-            <Dialog open={openDialog} onOpenChange={onClose}>
-                <DialogContent>
-                    <LandfieldDetails landfield={selectedLandfield} landfieldIndex={selectedLandfieldIndex} />
-                </DialogContent>
-            </Dialog>
         </>
     )
 }
 
-
-enum Terrains {
-    Mountains,
-    Forest,
-    Water,
-    DeepWater,
-    Sand,
-    Grass
-}
-
-enum Buildings {
-    VendorShop,
-    RecipeShop,
-    Tavern,
-    Brothel,
-    Residential
-}
-
-type Landfield = {
+export type Landfield = {
     type: 'landfield' | 'building';
     terrainType?: Terrains;
     buildingType?: Buildings;
@@ -344,167 +329,4 @@ type CommonResponse = {
     price: number;
     sellPrice: number;
     recipe: string;
-}
-
-const terrainResolver = (terrain: number | undefined) => {
-    switch (terrain) {
-        case Terrains.Mountains:
-            return "mountains";
-        case Terrains.Forest:
-            return "forest";
-        case Terrains.Water:
-            return "water";
-        case Terrains.DeepWater:
-            return "deepWater";
-        case Terrains.Sand:
-            return "sand";
-        case Terrains.Grass:
-            return "grass";
-
-        default: return "deepWater";
-    }
-}
-
-const buildingResolver = (building: number | undefined) => {
-    switch (building) {
-        case Buildings.VendorShop:
-            return "vendorShop";
-        case Buildings.RecipeShop:
-            return "recipeShop";
-        case Buildings.Tavern:
-            return "tavern";
-        case Buildings.Brothel:
-            return "brothel";
-        case Buildings.Residential:
-            return "residential";
-
-        default: return "brothel";
-    }
-}
-
-
-
-const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
-    const [loading, setLoading] = React.useState(false);
-    const config = useConfig()
-    const { address } = useAccount()
-
-    const isOwnerMe = landfield?.owner?.toLowerCase() === address?.toLowerCase()
-    const haveOwner = landfield?.owner && landfield?.owner?.toLowerCase() !== '0x0000000000000000000000000000000000000000'
-    const recipes = [
-        {
-            name: 'Wood',
-            contract: '0x75f1589501a546ec579E022B65853cD84322958d'
-        }
-    ]
-
-    if (!landfield) return <div>
-        Not found
-    </div>;
-
-
-    const buyLandfield = async () => {
-
-        if (!address) return
-
-        try {
-            setLoading(true)
-
-            await writeContract(config, {
-                account: address,
-                address: worldContract,
-                abi: LandfieldABI,
-                args: [landfieldIndex],
-                functionName: 'buyLandfield',
-            })
-
-        }
-        catch (e) {
-            console.log(e)
-        }
-        finally {
-            setLoading(false)
-        }
-
-    }
-
-    const setRecipe = async () => {
-        if (!address) return
-
-        try {
-            setLoading(true)
-
-            await writeContract(config, {
-                account: address,
-                address: worldContract,
-                abi: LandfieldABI,
-                args: [landfieldIndex, resourcesContracts[0].contract],
-                functionName: 'setRecipe',
-            })
-
-        }
-        catch (e) {
-            console.log(e)
-        }
-        finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="flex flex-col gap-3 w-full h-full">
-            <dl className="divide-y divide-gray-600">
-                {
-                    landfield.type === 'landfield' &&
-                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                        <dt className="text-sm font-medium text-gray-200">Owner</dt>
-                        <Link href={''} target="_blank" className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{shortenAddress(landfield.owner)}</Link>
-                    </div>
-                }
-                {
-                    landfield.type === 'building' &&
-                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                        <dt className="text-sm font-medium text-gray-200">Name</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.name}</dd>
-                    </div>
-                }
-                <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                    <dt className="text-sm font-medium text-gray-200">Terrain</dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.terrainType ? terrainResolver(landfield.terrainType) : buildingResolver(landfield.buildingType)}</dd>
-                </div>
-                {
-                    landfield.type === 'landfield' && <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                        <dt className="text-sm font-medium text-gray-200">Sell price</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield?.sellPrice}</dd>
-                    </div>
-                }
-                {
-                    landfield.type === 'landfield' &&
-                    <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                        <dt className="text-sm font-medium text-gray-200">Price</dt>
-                        <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.price}</dd>
-                    </div>
-                }
-                <div className=" py-6 sm:grid sm:grid-cols-3 sm:gap-4 ">
-                    <dt className="text-sm font-medium text-gray-200">Coordinates</dt>
-                    <dd className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">
-                        <span>X:</span> <span>{landfield.x}</span>, <span>Y:</span> <span>{landfield.y}</span>
-                    </dd>
-                </div>
-            </dl>
-
-            {
-                !isOwnerMe && landfield.type === 'landfield' &&
-                <div>
-                    <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-5 w-5 animate-spin' /> : (!haveOwner ? 'Buy' : 'Cry')}</button>
-                </div>
-            }
-
-            {
-                isOwnerMe &&
-                <button disabled={loading} onClick={setRecipe} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-5 w-5 animate-spin' /> : 'Set recipe'}</button>
-            }
-
-        </div>
-    )
 }
