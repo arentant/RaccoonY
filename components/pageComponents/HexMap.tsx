@@ -16,7 +16,7 @@ import LandfieldDetails from "./LandfieldDetails";
 import { buildingResolver, Buildings, terrainResolver, Terrains } from "./Resolvers";
 import ResizablePanel from "../ResizablePanel";
 
-const r = 100;
+const r = 60;
 
 const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: { landfields: Landfield[], x: number, y: number, side: string, isActive: boolean, account: string, onClick: () => void }) => {
     const landfield = landfields.find((t: any) => t.x === x && t.y === y);
@@ -29,79 +29,33 @@ const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: {
     const isVilian = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && landfield?.owner !== account
     const isMine = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater') && landfield?.owner === account
 
-    const border = isMine ? '/assets/blueBorder.png' : isVilian ? '/assets/redBorder.png' : undefined
+    const border = isMine ? '/assets/blueBorder.svg' : isVilian ? '/assets/redBorder.svg' : undefined
 
-    const src = `/assets/${all}/${all}.png`;
+    const src = `/assets/${all}/${all}.svg`;
 
     return (
-        <div
-            {...props}
-            onClick={onClick}
-            className={`relative ${side}`}
-            style={{
-                border: "1px solid #000",
-                boxSizing: "border-box",
-                height: `${r}px`,
-                width: `${r}px`,
-                position: "relative",
-                borderRadius: "100%"
-            }}
-        >
-            <div
-                style={{
-                    borderTop: "1px solid #000",
-                    borderBottom: "1px solid #000",
-                    boxSizing: "border-box",
-                    width: 100 / Math.sqrt(3) + "px",
-                    height: "100%",
-                    margin: "0 auto",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    transform: "rotate(90deg)"
-                }}
-            />
-            <div
-                style={{
-                    borderTop: "1px solid #000",
-                    borderBottom: "1px solid #000",
-                    boxSizing: "border-box",
-                    width: 100 / Math.sqrt(3) + "px",
-                    height: "100%",
-                    margin: "0 auto",
-                    transform: "rotate(150deg)",
-                    transformOrigin: "center center",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0
-                }}
-            />
-            <div
-                style={{
-                    borderTop: "1px solid #000",
-                    borderBottom: "1px solid #000",
-                    boxSizing: "border-box",
-                    width: 100 / Math.sqrt(3) + "px",
-                    height: "100%",
-                    margin: "0 auto",
-                    transform: "rotate(210deg)",
-                    transformOrigin: "center center",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0
-                }}
-            />
-            <div className={`absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}`}>
-                {
-                    border &&
-                    <Image src={border} alt="hexTile" width={100} height={100} className="absolute" />
-                }
-                <Image src={src} alt="hexTile" width={100} height={100} />
-            </div>
-        </div>
+        <>
+            {
+                border &&
+                <Image
+                    {...props}
+                    src={border}
+                    alt="hexTile"
+
+                    width={r}
+                    height={r}
+                    className={`absolute z-20 hover:-translate-y-2 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && '-translate-y-2'} ${isMine && '-translate-y-1'}`} />
+            }
+            <Image
+                {...props}
+                src={src}
+                alt="hexTile"
+
+                width={r}
+                height={r}
+                className={`hover:-translate-y-2 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && '-translate-y-2'} ${isMine && '-translate-y-1'}`} />
+        </>
+
     );
 };
 
@@ -223,7 +177,8 @@ export default function App() {
                         <Loader2 className="animate-spin h-20 w-20" />
                     </div>
                     :
-                    dimensions && landfields && address && <Map dimensions={dimensions} landfields={landfields} account={address} />
+                    dimensions && landfields && address && 
+                    <Map dimensions={dimensions} landfields={landfields} account={address} />
             }
         </>
     );
@@ -249,19 +204,18 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
 
     return (
         <>
-            <div className="scale-[.45] absolute -top-[200px]" style={{ width: "4000px" }}>
+            <div className="w-max pt-4" >
                 {state.board.map((row: any, rowIndex: number) => {
                     return (
                         <div
                             key={rowIndex}
                             style={{
-                                marginTop: "-14px",
                                 display: "flex",
                                 justifyContent: "center"
                             }}
                         >
                             {row.map((side: string, cellIndex: number) => (
-                                <>
+                                <div className="-mt-[23px]">
                                     <DropdownMenu onOpenChange={(open) => {
                                         if (open) {
                                             onClickHandler(rowIndex, cellIndex)
@@ -276,7 +230,7 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
                                                 x={rowIndex}
                                                 y={cellIndex}
                                                 side={side}
-                                                onClick={() => onClickHandler(rowIndex, cellIndex)}
+                                                onClick={() => { }}
                                                 account={account}
                                                 key={`${rowIndex}-${cellIndex}`}
                                             />
@@ -289,12 +243,12 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
                                             </ResizablePanel>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </>
+                                </div>
                             ))}
                         </div>
                     );
                 })}
-            </div >
+            </div>
         </>
     )
 }
