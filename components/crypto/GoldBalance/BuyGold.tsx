@@ -1,10 +1,11 @@
 import formatAmount from "@/lib/formatAmount";
 import { Loader } from "lucide-react";
 import { FC, useEffect, useState } from "react";
-import { createConfig, http, useAccount, useBalance, useConfig, useSwitchChain } from "wagmi";
+import { useAccount, useConfig, useSwitchChain } from "wagmi";
 import { getBalance, writeContract } from "wagmi/actions";
 import LandfieldABI from "../../../lib/abis/LanfieldABI.json";
 import { parseEther } from 'viem'
+import { worldContract } from "@/lib/contracts";
 
 const BuyGold: FC = () => {
     const config = useConfig()
@@ -14,7 +15,7 @@ const BuyGold: FC = () => {
     const { data: chain } = useSwitchChain()
     const { address } = useAccount()
     const [amount, setAmount] = useState<string>('')
-    const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
+
     useEffect(() => {
 
         (async () => {
@@ -50,7 +51,7 @@ const BuyGold: FC = () => {
 
             await writeContract(config, {
                 account: address,
-                address: contract,
+                address: worldContract,
                 abi: LandfieldABI,
                 value: parseEther(amount),
                 functionName: 'buyGold',

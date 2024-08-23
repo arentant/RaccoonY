@@ -6,6 +6,7 @@ import { Plus } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "../../shadcn/dialog"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import BuyGold from "./BuyGold"
+import { currency } from "@/lib/contracts"
 
 const GoldBalance: FC = () => {
 
@@ -18,12 +19,6 @@ const GoldBalance: FC = () => {
         chain,
         transport: http('https://eth-sepolia.public.blastapi.io/')
     })
-
-    const currency = {
-        symbol: 'GOLD',
-        decimals: 0,
-        contract: '0xbFE264Bf40F5f14a4EA723d4c163F22E0EB597CF'
-    }
 
     useEffect(() => {
 

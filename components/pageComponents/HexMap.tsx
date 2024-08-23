@@ -10,6 +10,7 @@ import { Loader, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
+import { resourcesContracts, worldContract } from "@/lib/contracts";
 
 const r = 100;
 
@@ -24,7 +25,9 @@ const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: {
     const isVilian = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && landfield?.owner !== account
     const isMine = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater') && landfield?.owner === account
 
-    const src = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') ? `/assets/${all}/${all}${isVilian ? 'Enemy' : 'My'}.png` : `/assets/${all}/${all}.png`;
+    const border = isMine ? '/assets/blueBorder.png' : isVilian ? '/assets/redBorder.png' : undefined
+
+    const src = `/assets/${all}/${all}.png`;
 
     return (
         <div
@@ -87,7 +90,13 @@ const Hex = ({ landfields, x, y, side, isActive, account, onClick, ...props }: {
                     right: 0
                 }}
             />
-            <Image src={src} alt="hexTile" width={10000} height={10000} className={`absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}`} />
+            <div className="absolute -bottom-2 hover:bottom-0 hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && 'bottom-0'} ${(isMine || isVilian) && '-bottom-1'}">
+                {
+                    border &&
+                    <Image src={border} alt="hexTile" width={100} height={100} className="absolute" />
+                }
+                <Image src={src} alt="hexTile" width={100} height={100} />
+            </div>
         </div>
     );
 };
@@ -143,27 +152,26 @@ export default function App() {
     const [dimensions, setDimensions] = React.useState<{ width: number, height: number } | undefined>(undefined);
     const [allRecipes, setAllRecipes] = React.useState<string[]>([])
 
-    const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
     useEffect(() => {
         (async () => {
             try {
                 setLoading(true)
                 const landfieldsResult = await readContract(config, {
                     abi: LandfieldABI,
-                    address: contract,
+                    address: worldContract,
                     functionName: 'getLandfields',
                     chainId: chain?.id,
                 })
 
                 const buildingsResult = await readContract(config, {
                     abi: LandfieldABI,
-                    address: contract,
+                    address: worldContract,
                     functionName: 'getBuildings',
                     chainId: chain?.id,
                 })
                 const dimensionsResult = await readContract(config, {
                     abi: LandfieldABI,
-                    address: contract,
+                    address: worldContract,
                     functionName: 'getDimensions',
                     chainId: chain?.id,
                 })
@@ -188,7 +196,8 @@ export default function App() {
                     price: Number(r.price),
                     sellPrice: Number(r.sellPrice),
                     recipe: r.recipe,
-                    type: 'building'
+                    type: 'building',
+                    name: r.name
                 }))
 
                 setLandfields([...parsedLandfieldsResult as any, ...parsedBuildingsResult as any])
@@ -224,8 +233,8 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
     const selectedLandfieldIndex = landfields.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
     const onClickHandler = (rowIndex: number, cellIndex: number) => {
-        const landfield = landfields.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
-        if (landfield?.terrainType !== Terrains.DeepWater) {
+        const landfield = landfields.find(l => l.x === rowIndex && l.y === cellIndex);
+        if (!!landfield) {
             setSelectedCell({ rowIndex, cellIndex })
             setOpenDialog(true)
         }
@@ -254,16 +263,23 @@ const Map = ({ dimensions, landfields, account }: { dimensions: { height: number
                             }}
                         >
                             {row.map((side: string, cellIndex: number) => (
-                                <Hex
-                                    isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
-                                    landfields={landfields}
-                                    x={rowIndex}
-                                    y={cellIndex}
-                                    side={side}
-                                    onClick={() => onClickHandler(rowIndex, cellIndex)}
-                                    account={account}
-                                    key={`${rowIndex}-${cellIndex}`}
-                                />
+                                <>
+
+                                    <Hex
+                                        isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
+                                        landfields={landfields}
+                                        x={rowIndex}
+                                        y={cellIndex}
+                                        side={side}
+                                        onClick={() => onClickHandler(rowIndex, cellIndex)}
+                                        account={account}
+                                        key={`${rowIndex}-${cellIndex}`}
+                                    />
+
+
+
+                                </>
+
 
 
                             ))}
@@ -372,8 +388,6 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
     const [loading, setLoading] = React.useState(false);
     const config = useConfig()
     const { address } = useAccount()
-    const contract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE' as `0x${string}`
-
 
     const isOwnerMe = landfield?.owner?.toLowerCase() === address?.toLowerCase()
     const haveOwner = landfield?.owner && landfield?.owner?.toLowerCase() !== '0x0000000000000000000000000000000000000000'
@@ -398,7 +412,7 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
 
             await writeContract(config, {
                 account: address,
-                address: contract,
+                address: worldContract,
                 abi: LandfieldABI,
                 args: [landfieldIndex],
                 functionName: 'buyLandfield',
@@ -422,9 +436,9 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
 
             await writeContract(config, {
                 account: address,
-                address: contract,
+                address: worldContract,
                 abi: LandfieldABI,
-                args: [landfieldIndex],
+                args: [landfieldIndex, resourcesContracts[0].contract],
                 functionName: 'setRecipe',
             })
 
@@ -482,8 +496,13 @@ const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: n
             {
                 !isOwnerMe && landfield.type === 'landfield' &&
                 <div>
-                    <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-4 w-4' /> : (!haveOwner ? 'Buy' : 'Cry')}</button>
+                    <button disabled={loading} onClick={buyLandfield} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-5 w-5 animate-spin' /> : (!haveOwner ? 'Buy' : 'Cry')}</button>
                 </div>
+            }
+
+            {
+                isOwnerMe &&
+                <button disabled={loading} onClick={setRecipe} className="px-4 p-2 font-semibold text-lg bg-yellow-600 rounded-lg w-fit">{loading ? <Loader className='h-5 w-5 animate-spin' /> : 'Set recipe'}</button>
             }
 
         </div>
