@@ -185,7 +185,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
     }
 
     const [state] = React.useReducer(reducer, {
-        board: createBoard(100, 100),
+        board: createBoard(dimensions.height, dimensions.width),
         currentSide: "A"
     });
 
