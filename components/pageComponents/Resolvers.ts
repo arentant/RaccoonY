@@ -1,7 +1,7 @@
 
 export const terrainResolver = (terrain: number | undefined) => {
     switch (terrain) {
-        case Terrains.Mountains:
+        case Terrains.Mountain:
             return "mountains";
         case Terrains.Forest:
             return "forest";
@@ -9,9 +9,7 @@ export const terrainResolver = (terrain: number | undefined) => {
             return "water";
         case Terrains.DeepWater:
             return "deepWater";
-        case Terrains.Sand:
-            return "sand";
-        case Terrains.Grass:
+        case Terrains.Flat:
             return "grass";
 
         default: return "deepWater";
@@ -36,14 +34,8 @@ export const buildingResolver = (building: number | undefined) => {
 }
 
 
-export enum Terrains {
-    Mountains,
-    Forest,
-    Water,
-    DeepWater,
-    Sand,
-    Grass
-}
+export enum Terrains { None, Forest, DeepWater, Water, Flat, Mountain }
+
 
 export enum Buildings {
     VendorShop,

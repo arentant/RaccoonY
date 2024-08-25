@@ -18,4 +18,14 @@ export const formatAmount = (unformattedAmount: bigint | unknown, decimals: numb
 export const haveOwner = (owner: string) => {
   const haveOwner = owner && owner?.toLowerCase() !== '0x0000000000000000000000000000000000000000'
   return haveOwner
-} 
+}
+
+// zuyg
+export function isEven(n: number) {
+  return n % 2 == 0;
+}
+
+// kent
+export function isOdd(n: number) {
+  return Math.abs(n % 2) == 1;
+}

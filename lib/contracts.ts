@@ -1,4 +1,4 @@
-export const worldContract = '0xEB2557914c032386A0aFc786ff56BF10187Cb6cE'
+export const worldContract = '0x345Cb8b5F0aF5774F5F8bC403f1a4E2D4cf9e9A6'
 
 export const resourcesContracts = [
     {

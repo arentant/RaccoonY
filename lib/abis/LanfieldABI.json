@@ -2,8 +2,18 @@
     {
         "inputs": [
             {
+                "internalType": "uint256",
+                "name": "mapWidth",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "mapHeight",
+                "type": "uint256"
+            },
+            {
                 "internalType": "string",
-                "name": "worldName_",
+                "name": "mapName",
                 "type": "string"
             }
         ],
@@ -11,202 +21,9 @@
         "type": "constructor"
     },
     {
-        "inputs": [],
-        "name": "CantBuy",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "IncorrectPayment",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NotAllowed",
-        "type": "error"
-    },
-    {
         "inputs": [
-            {
-                "internalType": "enum World.BuildingType[]",
-                "name": "buildingType",
-                "type": "uint8[]"
-            },
-            {
-                "internalType": "string[]",
-                "name": "name",
-                "type": "string[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "x",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "y",
-                "type": "uint256[]"
-            }
-        ],
-        "name": "__createBuildings__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "enum World.TerrainType[]",
-                "name": "terrainType",
-                "type": "uint8[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "price",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "x",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "y",
-                "type": "uint256[]"
-            },
-            {
-                "internalType": "uint256",
-                "name": "row_",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "column_",
-                "type": "uint256"
-            }
-        ],
-        "name": "__createLandfields__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "__destroyAll__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "__getReceipes__",
-        "outputs": [
-            {
-                "internalType": "address[]",
-                "name": "receipes_",
-                "type": "address[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "__getResources__",
-        "outputs": [
-            {
-                "internalType": "address[]",
-                "name": "resources_",
-                "type": "address[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "goldAddr",
-                "type": "address"
-            }
-        ],
-        "name": "__setNativeCurrency__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "receipes_",
-                "type": "address[]"
-            }
-        ],
-        "name": "__setReceipes__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "resources_",
-                "type": "address[]"
-            }
-        ],
-        "name": "__setResources__",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "buyGold",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "id",
-                "type": "uint256"
-            }
-        ],
-        "name": "buyLandfield",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "landfieldId",
-                "type": "uint256"
-            }
-        ],
-        "name": "claimResource",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getBuildings",
-        "outputs": [
             {
                 "components": [
-                    {
-                        "internalType": "enum World.BuildingType",
-                        "name": "buildingType",
-                        "type": "uint8"
-                    },
                     {
                         "internalType": "string",
                         "name": "name",
@@ -221,107 +38,103 @@
                         "internalType": "uint256",
                         "name": "y",
                         "type": "uint256"
-                    }
-                ],
-                "internalType": "struct World.Building[]",
-                "name": "",
-                "type": "tuple[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getDimensions",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "id",
-                "type": "uint256"
-            }
-        ],
-        "name": "getLandfieldPrice",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "landfieldId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getLandfieldProduction",
-        "outputs": [
-            {
-                "internalType": "uint256[]",
-                "name": "",
-                "type": "uint256[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getLandfields",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "address",
-                        "name": "owner",
-                        "type": "address"
                     },
                     {
                         "internalType": "uint256",
-                        "name": "price",
+                        "name": "elevation",
                         "type": "uint256"
                     },
                     {
-                        "internalType": "uint256",
-                        "name": "sellPrice",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "enum World.TerrainType",
+                        "internalType": "enum Models.TerrainType",
                         "name": "terrainType",
                         "type": "uint8"
                     },
                     {
+                        "internalType": "enum Models.BiomeType",
+                        "name": "biomeType",
+                        "type": "uint8"
+                    },
+                    {
                         "internalType": "address",
-                        "name": "recipe",
+                        "name": "blueprint",
                         "type": "address"
                     },
                     {
-                        "internalType": "uint256",
-                        "name": "lastClaim",
-                        "type": "uint256"
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    }
+                ],
+                "internalType": "struct Game.Tile[]",
+                "name": "tiles",
+                "type": "tuple[]"
+            }
+        ],
+        "name": "__initializeTiles__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "blueprints",
+                "type": "address[]"
+            }
+        ],
+        "name": "__setBlueprints__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "castleBlueprintAddress",
+                "type": "address"
+            }
+        ],
+        "name": "__setCastleBlueprint__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "nativeResourceAddress",
+                "type": "address"
+            }
+        ],
+        "name": "__setNativeResource__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "resources",
+                "type": "address[]"
+            }
+        ],
+        "name": "__setResources__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
                     },
                     {
                         "internalType": "uint256",
@@ -332,9 +145,113 @@
                         "internalType": "uint256",
                         "name": "y",
                         "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "elevation",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum Models.TerrainType",
+                        "name": "terrainType",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "enum Models.BiomeType",
+                        "name": "biomeType",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "blueprint",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
                     }
                 ],
-                "internalType": "struct World.Landfield[]",
+                "internalType": "struct Game.Tile",
+                "name": "tile",
+                "type": "tuple"
+            }
+        ],
+        "name": "__updateTile__",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "buyGold",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getMap",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "width",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "height",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "components": [
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "x",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "y",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "elevation",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "enum Models.TerrainType",
+                        "name": "terrainType",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "enum Models.BiomeType",
+                        "name": "biomeType",
+                        "type": "uint8"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "blueprint",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    }
+                ],
+                "internalType": "struct Game.Tile[]",
                 "name": "",
                 "type": "tuple[]"
             }
@@ -343,64 +260,37 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "getResourceContracts",
+        "outputs": [
+            {
+                "internalType": "address[]",
+                "name": "",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "landfieldId",
+                "name": "x",
                 "type": "uint256"
-            }
-        ],
-        "name": "getOwnership",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "gold",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "islandAddr",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
+            },
             {
                 "internalType": "uint256",
-                "name": "landfieldId",
+                "name": "y",
                 "type": "uint256"
             },
             {
                 "internalType": "address",
-                "name": "recipe",
+                "name": "blueprintAddress",
                 "type": "address"
             }
         ],
-        "name": "setRecipe",
+        "name": "occupyTile",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -409,31 +299,18 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "sellPrice",
+                "name": "x",
                 "type": "uint256"
             },
             {
                 "internalType": "uint256",
-                "name": "landfieldId",
+                "name": "y",
                 "type": "uint256"
             }
         ],
-        "name": "setSellPrice",
+        "name": "setCastle",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "worldName",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     }
 ]

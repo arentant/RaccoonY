@@ -7,10 +7,10 @@ import { haveOwner, shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
 import { resourcesContracts, worldContract } from "@/lib/contracts";
 import { buildingResolver, terrainResolver } from "./Resolvers";
-import { Landfield } from "./HexMap";
+import { Tile } from "./HexMap";
 
 
-const LandfieldDetails: FC<{ landfield: Landfield | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
+const LandfieldDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
     const [loading, setLoading] = React.useState(false);
     const config = useConfig()
     const { address } = useAccount()
