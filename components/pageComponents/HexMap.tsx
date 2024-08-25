@@ -220,7 +220,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                                     />
                                     {
                                         open && selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex &&
-                                        <DropdownMenu open={open} onOpenChange={(open) => {
+                                        <DropdownMenu modal={false} open={open} onOpenChange={(open) => {
                                             setOpen(open)
                                             if (!open) {
                                                 setSelectedCell(undefined)
