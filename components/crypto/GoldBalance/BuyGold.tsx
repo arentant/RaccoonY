@@ -40,7 +40,7 @@ const BuyGold: FC = () => {
             }
         })()
 
-    }, [address, chain])
+    }, [address, chain, config])
 
     const buyGold = async () => {
 

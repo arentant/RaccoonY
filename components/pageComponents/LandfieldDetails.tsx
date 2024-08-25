@@ -10,7 +10,7 @@ import { buildingResolver, terrainResolver } from "./Resolvers";
 import { Tile } from "./HexMap";
 
 
-const LandfieldDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
+const TileDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
     const [loading, setLoading] = React.useState(false);
     const config = useConfig()
     const { address } = useAccount()
@@ -83,25 +83,25 @@ const LandfieldDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number
     return (
         <div className="flex flex-col gap-3 h-full px-3 py-3 min-w-64 justify-between">
             <div>
-                {
+                {/* {
                     landfield.type === 'landfield' &&
                     <Item>
                         <div className="text-sm font-medium text-gray-200">Owner</div>
                         <Link href={''} target="_blank" className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{shortenAddress(landfield.owner)}</Link>
                     </Item>
-                }
+                } */}
 
                 <Item>
                     <div className="text-sm font-medium text-gray-200">Terrain</div>
-                    <div className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.terrainType ? terrainResolver(landfield.terrainType) : buildingResolver(landfield.buildingType)}</div>
+                    <div className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{terrainResolver(landfield.terrainType)}</div>
                 </Item>
-                {
+                {/* {
                     landfield.type === 'landfield' && !haveOwner(landfield.owner) &&
                     <Item>
                         <div className="text-sm font-medium text-gray-200">Price</div>
                         <div className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">{landfield.price}</div>
                     </Item>
-                }
+                } */}
                 <Item>
                     <div className="text-sm font-medium text-gray-200">Coordinates</div>
                     <div className="mt-1 text-sm leading-6 text-gray-400 sm:col-span-2 sm:mt-0">
@@ -111,10 +111,10 @@ const LandfieldDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number
 
             </div>
 
-            {
+            {/* {
                 !isOwnerMe && landfield.type === 'landfield' &&
                 <button disabled={loading} onClick={buyLandfield} className="px-4 py-1 text-sm font-semibold bg-yellow-600 rounded-md w-fit flex items-center gap-2 disabled:opacity-80">{loading ? <Loader className='h-4 w-4 animate-spin' /> : <Wallet className="w-4 h-4" />} <span>{(!(haveOwner(landfield.owner)) ? 'Buy' : 'Cry')}</span></button>
-            }
+            } */}
 
             {
                 isOwnerMe &&
@@ -125,4 +125,4 @@ const LandfieldDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number
     )
 }
 
-export default LandfieldDetails;
+export default TileDetails;

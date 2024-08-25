@@ -12,8 +12,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/shadcn/dropdownMenu";
-import LandfieldDetails from "./LandfieldDetails";
-import { buildingResolver, Buildings, terrainResolver, Terrains } from "./Resolvers";
+import TileDetails from "./LandfieldDetails";
+import { terrainResolver, Terrains } from "./Resolvers";
 import ResizablePanel from "../ResizablePanel";
 import { isEven } from "@/lib/utils";
 import TestApp from "./TestApp";
@@ -148,7 +148,7 @@ export default function App() {
                 setLoading(false)
             }
         })()
-    }, [chain])
+    }, [chain, config])
 
     return (
         <>
@@ -169,16 +169,18 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
     const { dimensions, tiles } = map;
     console.log(map)
     const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
-    const selectedLandfield = tiles.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
+    const selectedTile = tiles.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
     const selectedLandfieldIndex = tiles.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
     const onClickHandler = (rowIndex: number, cellIndex: number) => {
-        const landfield = tiles.find(l => l.x === rowIndex && l.y === cellIndex);
-        if (!!landfield) {
+        const tile = tiles.find(l => l.x === rowIndex && l.y === cellIndex);
+        if (!!tile) {
             setSelectedCell({ rowIndex, cellIndex })
         }
     }
+
+    const [open, setOpen] = React.useState(false)
 
     const [state] = React.useReducer(reducer, {
         board: createBoard(dimensions.height, dimensions.width),
@@ -201,11 +203,11 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
 
                                 const isDeepWater = !tiles.find(l => l.x === rowIndex && l.y === cellIndex)
 
-                                const [open, setOpen] = React.useState(false)
-
-                                return <div onClick={() => {
-                                    if (!isDeepWater) setOpen(true); onClickHandler(rowIndex, cellIndex)
-                                }} className={`-mt-[17px] group relative ${!isDeepWater ? 'cursor-pointer' : 'cursor-grab'}`}>
+                                return <div
+                                    key={`${rowIndex}-${cellIndex}`}
+                                    onClick={() => {
+                                        if (!isDeepWater) setOpen(true); onClickHandler(rowIndex, cellIndex)
+                                    }} className={`-mt-[17px] group relative ${!isDeepWater ? 'cursor-pointer' : 'cursor-grab'}`}>
                                     <Hex
                                         isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
                                         tiles={tiles}
@@ -214,11 +216,10 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                                         side={side}
                                         onClick={() => { { setOpen(true); onClickHandler(rowIndex, cellIndex) } }}
                                         account={account}
-                                        key={`${rowIndex}-${cellIndex}`}
                                         isDeepWater={isDeepWater}
                                     />
                                     {
-                                        open &&
+                                        open && selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex &&
                                         <DropdownMenu open={open} onOpenChange={(open) => {
                                             setOpen(open)
                                             if (!open) {
@@ -227,10 +228,10 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                                         }}>
                                             <DropdownMenuTrigger className="absolute" />
                                             <DropdownMenuContent>
-                                                <DropdownMenuLabel>{selectedLandfield?.name || 'Landfield'}</DropdownMenuLabel>
+                                                <DropdownMenuLabel>{selectedTile?.name || 'Tile'}</DropdownMenuLabel>
                                                 <DropdownMenuSeparator />
                                                 <ResizablePanel>
-                                                    <LandfieldDetails landfield={selectedLandfield} landfieldIndex={selectedLandfieldIndex} />
+                                                    <TileDetails landfield={selectedTile} landfieldIndex={selectedLandfieldIndex} />
                                                 </ResizablePanel>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

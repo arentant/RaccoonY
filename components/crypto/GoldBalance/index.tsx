@@ -53,7 +53,7 @@ const GoldBalance: FC = () => {
         })()
 
 
-    }, [address, chain])
+    }, [address, chain, publicClient])
 
 
     return (
