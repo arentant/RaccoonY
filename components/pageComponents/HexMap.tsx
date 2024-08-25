@@ -20,13 +20,12 @@ import TestApp from "./TestApp";
 
 const r = 60;
 
-const Hex = ({ tiles, x, y, side, isActive, account, onClick, isDeepWater, ...props }: { tiles: Tile[], x: number, y: number, side: string, isActive: boolean, account: string, onClick: MouseEventHandler<HTMLImageElement>, isDeepWater?: boolean }) => {
-    const landfield = tiles.find((t: any) => t.x === x && t.y === y);
-    const terrain = terrainResolver(landfield?.terrainType)
+const Hex = ({ tiles, x, y, side, isActive, account, onClickHandler, isDeepWater, ...props }: { tiles: Tile[], x: number, y: number, side: string, isActive: boolean, account: string, onClickHandler: (x?: number, y?: number, mouseX?: number, mouseY?: number) => void, isDeepWater?: boolean }) => {
+    const tile = tiles.find((t: any) => t.x === x && t.y === y);
+    const terrain = terrainResolver(tile?.terrainType)
     const all = terrain || 'deepWater';
-
-    const isVilian = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && landfield?.owner !== account
-    const isMine = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater') && landfield?.owner === account
+    const isVilian = (tile?.owner && tile?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && tile?.owner !== account
+    const isMine = (tile?.owner && tile?.owner !== '0x0000000000000000000000000000000000000000' && all !== 'deepWater') && tile?.owner === account
 
     // const border = isMine ? '/assets/blueBorder.svg' : isVilian ? '/assets/redBorder.svg' : undefined
 
@@ -34,25 +33,24 @@ const Hex = ({ tiles, x, y, side, isActive, account, onClick, isDeepWater, ...pr
 
     return (
         <>
-            {/* {
-                border &&
-                <Image
+            <svg
+                height={r}
+                width={r}
+                viewBox={`0 0 ${r} ${r}`}
+                key={`${y}-${x}`}
+                onClick={(e) => {
+                    if (!isDeepWater) onClickHandler(y, x, e.clientX, e.clientY)
+                }}
+                className={`group relative ${!isDeepWater ? 'cursor-pointer' : 'cursor-grab'} ${isDeepWater ? 'cursor-grab' : 'hover:-translate-y-2 hover:cursor-pointer hex'} hover:brightness-110 transform transition-all duration-200  ${isActive && '-translate-y-2'} ${isMine && '-translate-y-1'}`}>
+                <image
                     {...props}
-                    src={border}
-                    onClick={onClick}
-                    alt="hexTileBorder"
+                    href={src}
+                    // alt="hexTile"
                     width={r}
                     height={r}
-                    className={`hex absolute z-20 group-hover:-translate-y-2 group-hover:brightness-110 transform transition-all duration-200 hover:cursor-pointer ${isActive && '-translate-y-2'} ${isMine && '-translate-y-1'}`} />
-            } */}
-            <Image
-                {...props}
-                src={src}
-                onClick={onClick}
-                alt="hexTile"
-                width={r}
-                height={r}
-                className={`${isDeepWater ? 'cursor-grab' : 'group-hover:-translate-y-2 hover:cursor-pointer hex'} group-hover:brightness-110 transform transition-all duration-200  ${isActive && '-translate-y-2'} ${isMine && '-translate-y-1'}`} />
+                />
+            </svg>
+
         </>
 
     );
@@ -130,8 +128,8 @@ export default function App() {
                         terrainType: t.terrainType,
                         biomeType: t.biomeType,
                         name: t.name,
-                        x: Number(t.y),
-                        y: Number(t.x),
+                        x: Number(t.x),
+                        y: Number(t.y),
                         owner: t.owner,
                         blueprint: t.blueprint
                     })),
@@ -157,7 +155,7 @@ export default function App() {
                     </div>
                     :
                     map && address &&
-                    <div className="w-screen overflow-hidden">
+                    <div className="w-screen overflow-hidden relative">
                         <Map map={map} account={address} />
                     </div>
             }
@@ -168,81 +166,85 @@ export default function App() {
 const Map = ({ map, account }: { map: Map, account: string }) => {
     const { dimensions, tiles } = map;
 
-    const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
-    const selectedTile = tiles.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
+    const [selectedCell, setSelectedCell] = React.useState<{ y: number, x: number } | undefined>(undefined);
+    const selectedTileIndex = tiles.findIndex(l => l.x === selectedCell?.x && l.y === selectedCell.y);
 
-    const selectedLandfieldIndex = tiles.findIndex(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
-
-    const onClickHandler = (rowIndex: number, cellIndex: number) => {
-        const tile = tiles.find(l => l.x === rowIndex && l.y === cellIndex);
+    const tile = tiles.find(l => l.x === selectedCell?.x && l.y === selectedCell?.y);
+    const [open, setOpen] = useState(false)
+    const [coordinates, setCoordinates] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+    const onClickHandler = (y?: number, x?: number, mouseX?: number, mouseY?: number) => {
+        const tile = tiles.find(l => l.x === x && l.y === y);
         if (!!tile) {
-            setSelectedCell({ rowIndex, cellIndex })
+            if (mouseX && mouseY) setCoordinates({ x: mouseX, y: mouseY })
+                setOpen(true)
+            setSelectedCell({ y: tile.y, x: tile.x })
+        }
+        else {
+            setSelectedCell(undefined)
         }
     }
 
-    const [open, setOpen] = React.useState(false)
-
     const [state] = React.useReducer(reducer, {
-        board: createBoard(dimensions.height, dimensions.width),
+        board: createBoard(100, 100),
         currentSide: "A"
     });
 
     return (
-        <TestApp>
-            <div className="w-max min-w-[100vw] pt-4" >
-                {state.board.map((row: any, rowIndex: number) => {
-                    return (
-                        <div
-                            key={rowIndex}
-                            style={{
-                                display: "flex",
-                                justifyContent: "center"
-                            }}
-                        >
-                            {row.map((side: string, cellIndex: number) => {
+        <>
+             {
+                open && tile &&
+                <DropdownMenu modal={false} open={open} onOpenChange={(open) => {
+                    setOpen(open)
+                    onClickHandler()
+                }}>
+                    <DropdownMenuTrigger style={{
+                        top: `${coordinates.y/1.2}px`,
+                        left: `${coordinates.x}px`,
+                        position: 'absolute',
+                    }} />
+                    <DropdownMenuContent sticky="always">
+                        <DropdownMenuLabel>{tile?.name || 'Tile'}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <ResizablePanel>
+                            <TileDetails landfield={tile} landfieldIndex={selectedTileIndex} />
+                        </ResizablePanel>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            }
+            <TestApp>
 
-                                const isDeepWater = !tiles.find(l => l.x === rowIndex && l.y === cellIndex)
+                <div className="w-max min-w-[100vw] pt-4 relative -space-y-[15.5px]" >
+                    {state.board.map((row: any, rowIndex: number) => {
+                        return (
+                            <div
+                                key={rowIndex}
+                                className="flex justify-center -space-x-[9px]"
+                            >
+                                {row.map((side: string, cellIndex: number) => {
 
-                                return <div
+                                    const isDeepWater = !tiles.find(l => l.x === cellIndex && l.y === rowIndex)
+
+                                    return <Hex
                                     key={`${rowIndex}-${cellIndex}`}
-                                    onClick={() => {
-                                        if (!isDeepWater) setOpen(true); onClickHandler(rowIndex, cellIndex)
-                                    }} className={`-mt-[17px] group relative ${!isDeepWater ? 'cursor-pointer' : 'cursor-grab'}`}>
-                                    <Hex
-                                        isActive={selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex}
+                                        isActive={selectedCell?.y === rowIndex && selectedCell?.x === cellIndex}
                                         tiles={tiles}
-                                        x={rowIndex}
-                                        y={cellIndex}
+                                        x={cellIndex}
+                                        y={rowIndex}
                                         side={side}
-                                        onClick={() => { { setOpen(true); onClickHandler(rowIndex, cellIndex) } }}
+                                        onClickHandler={onClickHandler}
                                         account={account}
                                         isDeepWater={isDeepWater}
                                     />
-                                    {
-                                        open && selectedCell?.rowIndex === rowIndex && selectedCell?.cellIndex === cellIndex &&
-                                        <DropdownMenu open={open} onOpenChange={(open) => {
-                                            setOpen(open)
-                                            if (!open) {
-                                                setSelectedCell(undefined)
-                                            }
-                                        }}>
-                                            <DropdownMenuTrigger className="absolute" />
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>{selectedTile?.name || 'Tile'}</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                <ResizablePanel>
-                                                    <TileDetails landfield={selectedTile} landfieldIndex={selectedLandfieldIndex} />
-                                                </ResizablePanel>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    }
-                                </div>
-                            })}
-                        </div>
-                    );
-                })}
-            </div>
-        </TestApp>
+                                })}
+                            </div>
+                        );
+                    })}
+
+                </div>
+              
+            </TestApp>
+        </>
+
     )
 }
 
