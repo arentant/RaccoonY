@@ -17,14 +17,12 @@ import { terrainResolver, Terrains } from "./Resolvers";
 import ResizablePanel from "../ResizablePanel";
 import { isEven } from "@/lib/utils";
 import TestApp from "./TestApp";
-import build from "next/dist/build";
 
 const r = 60;
 
 const Hex = ({ tiles, x, y, side, isActive, account, onClick, isDeepWater, ...props }: { tiles: Tile[], x: number, y: number, side: string, isActive: boolean, account: string, onClick: MouseEventHandler<HTMLImageElement>, isDeepWater?: boolean }) => {
     const landfield = tiles.find((t: any) => t.x === x && t.y === y);
     const terrain = terrainResolver(landfield?.terrainType)
-    console.log(tiles)
     const all = terrain || 'deepWater';
 
     const isVilian = (landfield?.owner && landfield?.owner !== '0x0000000000000000000000000000000000000000') && all !== 'deepWater' && landfield?.owner !== account
@@ -148,7 +146,7 @@ export default function App() {
                 setLoading(false)
             }
         })()
-    }, [chain, config])
+    }, [chain])
 
     return (
         <>
@@ -159,7 +157,9 @@ export default function App() {
                     </div>
                     :
                     map && address &&
-                    <Map map={map} account={address} />
+                    <div className="w-screen overflow-hidden">
+                        <Map map={map} account={address} />
+                    </div>
             }
         </>
     );
@@ -167,7 +167,7 @@ export default function App() {
 
 const Map = ({ map, account }: { map: Map, account: string }) => {
     const { dimensions, tiles } = map;
-    console.log(map)
+
     const [selectedCell, setSelectedCell] = React.useState<{ rowIndex: number, cellIndex: number } | undefined>(undefined);
     const selectedTile = tiles.find(l => l.x === selectedCell?.rowIndex && l.y === selectedCell?.cellIndex);
 
@@ -189,7 +189,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
 
     return (
         <TestApp>
-            <div className="w-max pt-4" >
+            <div className="w-max min-w-[100vw] pt-4" >
                 {state.board.map((row: any, rowIndex: number) => {
                     return (
                         <div
