@@ -8,7 +8,7 @@ const HomePage = () => {
     const { address } = useAccount()
 
     return (
-        <div className={`flex flex-col items-center justify-between h-screen w-full relative`}>
+        <div className={`flex flex-col items-center gap-3 h-screen w-full relative`}>
             {
                 address ?
                     <>
