@@ -6,7 +6,7 @@ export async function getServerSideProps(context: any) {
     );
 
     const contract = context.query.contract
-    const chainId = context.query.chainId
+    const chainId = Number(context.query.chainId)
 
     const settings = {
         chainId,
