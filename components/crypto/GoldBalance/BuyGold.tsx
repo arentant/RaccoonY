@@ -4,8 +4,8 @@ import { useAccount, useConfig, useSwitchChain } from "wagmi";
 import { getBalance, writeContract } from "wagmi/actions";
 import LandfieldABI from "../../../lib/abis/LanfieldABI.json";
 import { parseEther } from 'viem'
-import { worldContract } from "@/lib/contracts";
 import { formatAmount } from "@/lib/utils";
+import { useSettingsState } from "@/context/realmContext";
 
 const BuyGold: FC = () => {
     const config = useConfig()
@@ -15,6 +15,7 @@ const BuyGold: FC = () => {
     const { data: chain } = useSwitchChain()
     const { address } = useAccount()
     const [amount, setAmount] = useState<string>('')
+    const { contract: worldContract } = useSettingsState()
 
     useEffect(() => {
 
@@ -24,7 +25,7 @@ const BuyGold: FC = () => {
                 if (!chain || !address) return
 
                 setLoading(true)
-            
+
                 const res = await getBalance(config, {
                     address,
                     chainId: chain?.id,

@@ -5,7 +5,6 @@ import { Loader, Loader2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { haveOwner, shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
-import { resourcesContracts, worldContract } from "@/lib/contracts";
 import { buildingResolver, terrainResolver } from "./Resolvers";
 import { Tile } from "./HexMap";
 
@@ -17,44 +16,19 @@ const TileDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> =
 
     const isOwnerMe = landfield?.owner?.toLowerCase() === address?.toLowerCase()
 
-    const buyLandfield = async () => {
-
-        if (!address) return
-
-        try {
-            setLoading(true)
-
-            await writeContract(config, {
-                account: address,
-                address: worldContract,
-                abi: LandfieldABI,
-                args: [landfieldIndex],
-                functionName: 'buyLandfield',
-            })
-
-        }
-        catch (e) {
-            console.log(e)
-        }
-        finally {
-            setLoading(false)
-        }
-
-    }
-
     const setRecipe = async () => {
         if (!address) return
 
         try {
             setLoading(true)
 
-            await writeContract(config, {
-                account: address,
-                address: worldContract,
-                abi: LandfieldABI,
-                args: [landfieldIndex, resourcesContracts[0].contract],
-                functionName: 'setRecipe',
-            })
+            // await writeContract(config, {
+            //     account: address,
+            //     address: worldContract,
+            //     abi: LandfieldABI,
+            //     args: [landfieldIndex, resourcesContracts[0].contract],
+            //     functionName: 'setRecipe',
+            // })
 
         }
         catch (e) {

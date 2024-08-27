@@ -1,10 +1,8 @@
-import React, { MouseEventHandler, useEffect, useState } from "react";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
 import { useAccount, useConfig, useSwitchChain } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { Loader2 } from "lucide-react";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
-import { worldContract } from "@/lib/contracts";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,6 +15,7 @@ import { terrainResolver, Terrains } from "./Resolvers";
 import ResizablePanel from "../ResizablePanel";
 import { isEven } from "@/lib/utils";
 import TestApp from "./TestApp";
+import { useSettingsState } from "@/context/realmContext";
 
 const r = 60;
 
@@ -107,6 +106,8 @@ export default function App() {
     const [map, setMap] = useState<Map | undefined>(undefined)
     const [allRecipes, setAllRecipes] = React.useState<string[]>([])
 
+    const { contract: worldContract } = useSettingsState()
+
     useEffect(() => {
         (async () => {
             try {
@@ -176,7 +177,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
         const tile = tiles.find(l => l.x === x && l.y === y);
         if (!!tile) {
             if (mouseX && mouseY) setCoordinates({ x: mouseX, y: mouseY })
-                setOpen(true)
+            setOpen(true)
             setSelectedCell({ y: tile.y, x: tile.x })
         }
         else {
@@ -191,14 +192,14 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
 
     return (
         <>
-             {
+            {
                 open && tile &&
                 <DropdownMenu modal={false} open={open} onOpenChange={(open) => {
                     setOpen(open)
                     onClickHandler()
                 }}>
                     <DropdownMenuTrigger style={{
-                        top: `${coordinates.y/1.2}px`,
+                        top: `${coordinates.y / 1.2}px`,
                         left: `${coordinates.x}px`,
                         position: 'absolute',
                     }} />
@@ -225,7 +226,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                                     const isDeepWater = !tiles.find(l => l.x === cellIndex && l.y === rowIndex)
 
                                     return <Hex
-                                    key={`${rowIndex}-${cellIndex}`}
+                                        key={`${rowIndex}-${cellIndex}`}
                                         isActive={selectedCell?.y === rowIndex && selectedCell?.x === cellIndex}
                                         tiles={tiles}
                                         x={cellIndex}
@@ -241,7 +242,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                     })}
 
                 </div>
-              
+
             </TestApp>
         </>
 
