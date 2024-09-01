@@ -1,7 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
-import Balances from "./crypto/Balances";
-import { useAccount } from "wagmi";
 import GoldBalance from "./crypto/GoldBalance";
 
 const Header = () => {

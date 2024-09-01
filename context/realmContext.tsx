@@ -2,7 +2,9 @@ import React, { Context, FC } from 'react'
 
 type Config = {
     chainId: number,
-    contract: `0x${string}`
+    contract: `0x${string}`,
+    goldContract: `0x${string}` | null,
+    castleContract: `0x${string}` | null,
 }
 
 export const SettingsStateContext = React.createContext<Config | null>(null);

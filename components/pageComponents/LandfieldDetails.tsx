@@ -2,17 +2,17 @@ import React, { FC } from "react";
 import { useAccount, useConfig } from "wagmi";
 import { writeContract } from "wagmi/actions";
 import { Loader, Loader2, Wallet } from "lucide-react";
-import Link from "next/link";
-import { haveOwner, shortenAddress } from "@/lib/utils";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
-import { buildingResolver, terrainResolver } from "./Resolvers";
+import { terrainResolver } from "./Resolvers";
 import { Tile } from "./HexMap";
+import { useSettingsState } from "@/context/realmContext";
 
 
 const TileDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> = ({ landfield, landfieldIndex }) => {
     const [loading, setLoading] = React.useState(false);
     const config = useConfig()
     const { address } = useAccount()
+    const { contract, castleContract } = useSettingsState()
 
     const isOwnerMe = landfield?.owner?.toLowerCase() === address?.toLowerCase()
 
@@ -29,6 +29,28 @@ const TileDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> =
             //     args: [landfieldIndex, resourcesContracts[0].contract],
             //     functionName: 'setRecipe',
             // })
+
+        }
+        catch (e) {
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+    }
+
+    const placeBuilding = async () => {
+        if (!address) return
+
+        try {
+            setLoading(true)
+
+            await writeContract(config, {
+                address: contract,
+                abi: LandfieldABI,
+                args: [landfield?.x, landfield?.y, castleContract],
+                functionName: 'placeBuilding',
+            })
 
         }
         catch (e) {
@@ -94,6 +116,8 @@ const TileDetails: FC<{ landfield: Tile | undefined, landfieldIndex: number }> =
                 isOwnerMe &&
                 <button disabled={loading} onClick={setRecipe} className="px-4 py-1 text-sm font-semibold bg-yellow-600 rounded-md w-fit flex items-center gap-2 disabled:opacity-80">{loading ? <Loader className='h-4 w-4 animate-spin' /> : <Wallet className="w-4 h-4" />} <span>Set recipe</span></button>
             }
+
+            <button disabled={loading} onClick={placeBuilding} className="px-4 py-1 text-sm font-semibold bg-yellow-600 rounded-md w-fit flex items-center gap-2 disabled:opacity-80">{loading ? <Loader className='h-4 w-4 animate-spin' /> : <Wallet className="w-4 h-4" />} <span>Place building</span></button>
 
         </div>
     )

@@ -28,10 +28,8 @@ const TestApp = ({ children }: { children: React.ReactNode }) => {
             initialPositionY={0}
             panning={{
                 allowMiddleClickPan: true,
-                
                 wheelPanning: true,
-                excluded: ['hex']
-
+                // excluded: ['hex']
             }}
             
             alignmentAnimation={{

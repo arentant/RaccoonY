@@ -19,7 +19,7 @@ import { useSettingsState } from "@/context/realmContext";
 
 const r = 60;
 
-const Hex = ({ tiles, x, y, side, isActive, account, onClickHandler, isDeepWater, ...props }: { tiles: Tile[], x: number, y: number, side: string, isActive: boolean, account: string, onClickHandler: (x?: number, y?: number, mouseX?: number, mouseY?: number) => void, isDeepWater?: boolean }) => {
+const Hex = ({ tiles, x, y, isActive, account, onClickHandler, isDeepWater, ...props }: { tiles: Tile[], x: number, y: number, isActive: boolean, account: string, onClickHandler: (x?: number, y?: number, mouseX?: number, mouseY?: number) => void, isDeepWater?: boolean }) => {
     const tile = tiles.find((t: any) => t.x === x && t.y === y);
     const terrain = terrainResolver(tile?.terrainType)
     const all = terrain || 'deepWater';
@@ -69,15 +69,11 @@ function createBoard(height?: number | undefined, width?: number | undefined) {
     return rosLengthList.map((length) => new Array(length).fill(0));
 }
 
-function put(board: any, rowIndex: number, cellIndex: number, side: string) {
+function put(board: any, rowIndex: number, cellIndex: number) {
     const newBoard = board.map((row: any) => [...row]);
-    newBoard[rowIndex][cellIndex] = side;
     return newBoard;
 }
 
-function changeSide(side: string) {
-    return side === "A" ? "B" : "A";
-}
 
 function reducer(state: any, action: any) {
     switch (action.type) {
@@ -88,9 +84,7 @@ function reducer(state: any, action: any) {
                     state.board,
                     action.payload.rowIndex,
                     action.payload.cellIndex,
-                    state.currentSide
                 ),
-                currentSide: changeSide(state.currentSide)
             };
         default:
             return state;
@@ -186,7 +180,6 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
 
     const [state] = React.useReducer(reducer, {
         board: createBoard(dimensions.height, dimensions.width),
-        currentSide: "A"
     });
 
     return (
@@ -230,7 +223,6 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                                         tiles={tiles}
                                         x={cellIndex}
                                         y={rowIndex}
-                                        side={side}
                                         onClickHandler={onClickHandler}
                                         account={account}
                                         isDeepWater={isDeepWater}
