@@ -91,17 +91,17 @@
             },
             {
                 "internalType": "address",
-                "name": "buildingManagerAddress",
+                "name": "buildingFactoryAddress",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "resourceManagerAddress",
+                "name": "resourceFactoryAddress",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "shopManagerAddress",
+                "name": "shopFactoryAddress",
                 "type": "address"
             }
         ],
@@ -205,6 +205,29 @@
                 "internalType": "struct Models.Tile[]",
                 "name": "",
                 "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getMapBuildings",
+        "outputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "address[]",
+                "name": "",
+                "type": "address[]"
             }
         ],
         "stateMutability": "view",
