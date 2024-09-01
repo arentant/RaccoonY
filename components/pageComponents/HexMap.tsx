@@ -121,18 +121,17 @@ export default function App() {
 
                 const mapResolved: Map = {
                     dimensions: {
-                        height: Number((mapResult as unknown as any[])[0]),
-                        width: Number((mapResult as unknown as any[])[1])
+                        height: Number((mapResult as unknown as any[])[1]),
+                        width: Number((mapResult as unknown as any[])[0])
                     },
-                    name: (mapResult as unknown as any[])[2],
-                    tiles: (mapResult as unknown as any[])[3].map((t: TileResponse) => ({
+                    tiles: (mapResult as unknown as any[])[2].map((t: TileResponse) => ({
                         terrainType: t.terrainType,
                         biomeType: t.biomeType,
-                        name: t.name,
+                        // name: t.name,
                         x: Number(t.x),
                         y: Number(t.y),
-                        owner: t.owner,
-                        blueprint: t.blueprint
+                        // owner: t.owner,
+                        // blueprint: t.blueprint
                     })),
                 }
 
@@ -263,15 +262,15 @@ export type Tile = {
 type TileResponse = {
     terrainType: Terrains;
     biomeType: number;
-    name: string;
+    // name: string;
     x: bigint;
     y: bigint;
-    owner: string;
-    blueprint: string;
+    // owner: string;
+    // blueprint: string;
 }
 
 type Map = {
     dimensions: { height: number, width: number },
     tiles: Tile[],
-    name: string
+    // name: string
 }
