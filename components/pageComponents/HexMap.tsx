@@ -3,6 +3,7 @@ import { useAccount, useConfig, useSwitchChain } from "wagmi";
 import { readContract } from "wagmi/actions";
 import { Loader2 } from "lucide-react";
 import LandfieldABI from "@/lib/abis/LanfieldABI.json";
+import BuildingABI from "@/lib/abis/BuildingABI.json";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -100,7 +101,7 @@ export default function App() {
     const [map, setMap] = useState<Map | undefined>(undefined)
     const [allRecipes, setAllRecipes] = React.useState<string[]>([])
 
-    const { contract: worldContract } = useSettingsState()
+    const { contract: worldContract, castleContract } = useSettingsState()
 
     useEffect(() => {
         (async () => {
@@ -113,6 +114,32 @@ export default function App() {
                     chainId: chain?.id,
                 })
 
+                const mapBuildingsResult: any = await readContract(config, {
+                    abi: LandfieldABI,
+                    address: worldContract,
+                    functionName: 'getMapBuildings',
+                    chainId: chain?.id,
+                })
+
+                let resolvedMapBuildings: MapBuilding[] = []
+
+                for (let i = 0; i < mapBuildingsResult.length / 2; i++) {
+                    const x = Number(mapBuildingsResult[0][i])
+                    const y = Number(mapBuildingsResult[1][i])
+
+                    const building = mapBuildingsResult[2][i]
+                    const owner = mapBuildingsResult[3][i]
+
+                    resolvedMapBuildings.push({ x, y, building, owner })
+                }
+
+                const test = await readContract(config, {
+                    address: castleContract as `0x${string}`,
+                    abi: BuildingABI,
+                    functionName: 'getBuildingDetails',
+                })
+                debugger
+
                 const mapResolved: Map = {
                     dimensions: {
                         height: Number((mapResult as unknown as any[])[1]),
@@ -124,8 +151,8 @@ export default function App() {
                         // name: t.name,
                         x: Number(t.x),
                         y: Number(t.y),
-                        // owner: t.owner,
-                        // blueprint: t.blueprint
+                        owner: resolvedMapBuildings.find(l => l.x === Number(t.x) && l.y === Number(t.y))?.owner,
+                        building: resolvedMapBuildings.find(l => l.x === Number(t.x) && l.y === Number(t.y))?.building,
                     })),
                 }
 
@@ -139,6 +166,24 @@ export default function App() {
             }
         })()
     }, [chain])
+
+    const getBuildingsDetails = async (mapBuildigs: MapBuilding[]) => {
+        if (!address) return
+
+        try {
+            setLoading(true)
+
+
+
+
+        }
+        catch (e) {
+            console.log(e)
+        }
+        finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <>
@@ -196,7 +241,7 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
                         position: 'absolute',
                     }} />
                     <DropdownMenuContent sticky="always">
-                        <DropdownMenuLabel>{tile?.name || 'Tile'}</DropdownMenuLabel>
+                        <DropdownMenuLabel>{'Tile'}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <ResizablePanel>
                             <TileDetails landfield={tile} landfieldIndex={selectedTileIndex} />
@@ -243,26 +288,28 @@ const Map = ({ map, account }: { map: Map, account: string }) => {
 export type Tile = {
     terrainType: Terrains;
     biomeType: number
-    name: string;
     x: number;
     y: number;
     owner: string;
-    blueprint: string;
-
+    building: `0x${string}`;
 }
 
 type TileResponse = {
     terrainType: Terrains;
     biomeType: number;
-    // name: string;
     x: bigint;
     y: bigint;
-    // owner: string;
-    // blueprint: string;
 }
 
 type Map = {
     dimensions: { height: number, width: number },
     tiles: Tile[],
     // name: string
+}
+
+type MapBuilding = {
+    x: number,
+    y: number,
+    building: `0x${string}`,
+    owner: `0x${string}`
 }
