@@ -14,7 +14,7 @@ export async function getServerSideProps(context: any) {
 
     const publicClient = createPublicClient({
         chain: sepolia,
-        transport: http()
+        transport: http('https://sepolia.gateway.tenderly.co')
     })
     const contractsData = await publicClient.readContract({
         address: contract,

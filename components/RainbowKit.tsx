@@ -12,9 +12,9 @@ const RainbowKit = ({ children }: { children: ReactNode }) => {
         projectId: '6113382c2e587bff00e2b5c3d68531f3',
         chains: [sepolia, arbitrumSepolia, optimismSepolia],
         transports: {
-            [sepolia.id]: http(),
-            [arbitrumSepolia.id]: http(),
-            [optimismSepolia.id]: http()
+            [sepolia.id]: http('https://sepolia.gateway.tenderly.co'),
+            // [arbitrumSepolia.id]: http(),
+            // [optimismSepolia.id]: http()
         },
         ssr: true, // If your dApp uses server side rendering (SSR)
     });
